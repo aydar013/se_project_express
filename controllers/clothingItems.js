@@ -8,9 +8,6 @@ const getItems = (req, res) => {
 };
 
 const createItem = (req, res) => {
-  console.log(req);
-  console.log(req.body);
-
   const { name, weather, imageUrl } = req.body;
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
@@ -23,12 +20,8 @@ const createItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
   ClothingItem.findByIdAndDelete(itemId)
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
-    .then((item) => res.send({ message: `Item deleted` }))
+    .orFail()
+    .then(() => res.send({ message: `Item deleted` }))
     .catch((e) => itemError(req, res, e));
 };
 
@@ -37,11 +30,7 @@ const updateItem = (req, res) => {
   const { imageUrl } = req.body;
 
   ClothingItem.findByIdAndUpdate(itemsId, { $set: { imageUrl } })
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
+    .orFail()
     .then((item) => res.send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };
@@ -52,11 +41,7 @@ const likeItem = (req, res) => {
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
+    .orFail()
     .then((item) => res.send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };
@@ -67,11 +52,7 @@ const dislikeItem = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = 404;
-      throw error;
-    })
+    .orFail()
     .then((item) => res.send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };

@@ -1,9 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
-const { itemError } = require("../utils/errors");
+const { ERRORS, itemError } = require("../utils/errors");
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.send(items))
+    .then((items) => res.status(200).send({ data: items }))
     .catch((e) => itemError(req, res, e));
 };
 
@@ -12,16 +12,50 @@ const createItem = (req, res) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      res.send({ data: item });
+      res.status(201).send({ data: item });
+    })
+    .catch((e) => {
+      if (e.name === "ValidationError") {
+        return res.status(ERRORS.BAD_REQUEST).send({
+          message: "Invalid data passed for creating or updating a user.",
+        });
+      } else {
+        res
+          .status(ERRORS.INTERNAL_SERVER_ERROR)
+          .send({ message: "An error has occurred" });
+      }
     })
     .catch((e) => itemError(req, res, e));
 };
 
 const deleteItem = (req, res) => {
-  const { itemId } = req.params;
+  const itemId = req.params;
+  const userId = req.user._id;
+
+  //   ClothingItem.findByIdAndDelete(itemId)
+  //     .orFail()
+  //     .then((item) => {
+  //       if (String(item.owner) !== req.user._id) {
+  //         return res
+  //           .status(ERRORS.FORBIDDEN)
+  //           .send({ message: "You are not authorized to delete this item" });
+  //       }
+  //     })
+  //     .then(() => res.status(200).send({ message: `Item deleted` }))
+  //     .catch((e) => itemError(req, res, e));
+  // };
   ClothingItem.findByIdAndDelete(itemId)
     .orFail()
-    .then(() => res.send({ message: `Item deleted` }))
+    .then((item) => {
+      if (item.owner.equals(userId)) {
+        return item.remove(() => res.send({ item }));
+      }
+
+      return res
+        .status(ERRORS.FORBIDDEN)
+        .send({ message: "Not Authorized to delete" });
+    })
+
     .catch((e) => itemError(req, res, e));
 };
 
@@ -31,7 +65,7 @@ const updateItem = (req, res) => {
 
   ClothingItem.findByIdAndUpdate(itemsId, { $set: { imageUrl } })
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.status(200).send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };
 
@@ -42,7 +76,9 @@ const likeItem = (req, res) => {
     { new: true },
   )
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then(() =>
+      res.status(200).send({ message: "You successfully liked the item" }),
+    )
     .catch((e) => itemError(req, res, e));
 };
 
@@ -53,7 +89,7 @@ const dislikeItem = (req, res) => {
     { new: true },
   )
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.status(200).send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };
 

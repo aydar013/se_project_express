@@ -75,7 +75,7 @@ const updateCurrentUser = (req, res) => {
 const getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .orFail()
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((e) => {
       itemError(req, res, e);
     });

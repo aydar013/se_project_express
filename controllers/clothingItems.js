@@ -3,7 +3,7 @@ const { ERRORS, itemError } = require("../utils/errors");
 
 const getItems = (req, res) => {
   ClothingItem.find({})
-    .then((items) => res.status(200).send({ data: items }))
+    .then((items) => res.send({ data: items }))
     .catch((e) => itemError(req, res, e));
 };
 
@@ -20,7 +20,7 @@ const createItem = (req, res) => {
 const deleteItem = (req, res) => {
   const { itemId } = req.params;
 
-  ClothingItem.findByIdAndDelete(itemId)
+  ClothingItem.findById(itemId)
     .orFail()
     .then((item) => {
       if (String(item.owner) !== req.user._id) {
@@ -28,7 +28,9 @@ const deleteItem = (req, res) => {
           .status(ERRORS.FORBIDDEN)
           .send({ message: "You are not authorized to delete this item" });
       }
-      return res.send({ message: "Item deleted" });
+      return item.deleteOne().then(() => {
+        res.send({ message: "Item deleted" });
+      });
     })
     .catch((e) => itemError(req, res, e));
 };
@@ -43,7 +45,7 @@ const updateItem = (req, res) => {
       if (!item) {
         return res.status(ERRORS.NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.status(200).send({ data: item });
+      return res.send({ data: item });
     })
     .catch((e) => itemError(req, res, e));
 };
@@ -59,9 +61,7 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(ERRORS.NOT_FOUND).send({ message: "Item not found" });
       }
-      return res
-        .status(200)
-        .send({ message: "You successfully liked the item" });
+      return res.send({ message: "You successfully liked the item" });
     })
     .catch((e) => itemError(req, res, e));
 };
@@ -73,7 +73,7 @@ const dislikeItem = (req, res) => {
     { new: true },
   )
     .orFail()
-    .then((item) => res.status(200).send({ data: item }))
+    .then((item) => res.send({ data: item }))
     .catch((e) => itemError(req, res, e));
 };
 

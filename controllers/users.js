@@ -34,6 +34,18 @@ const createUser = (req, res) => {
     });
 };
 
+// const createUser = (req, res, next) => {
+//   const { name, avatar, email, password } = req.body;
+
+//   bcrypt
+//     .hash(password, 10)
+//     .then((hash) => User.create({ name, avatar, email, password: hash }))
+//     .then((user) => res.send({ name, avatar, email, _id: user._id }))
+//     .catch((e) => {
+//       itemError(req, res, e);
+//     });
+// };
+
 const login = (req, res) => {
   const { email, password } = req.body;
 

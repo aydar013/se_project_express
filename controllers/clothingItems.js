@@ -67,7 +67,7 @@ const likeItem = (req, res) => {
       if (!item) {
         return res.status(ERRORS.NOT_FOUND).send({ message: "Item not found" });
       }
-      return res.send({ message: "You successfully liked the item" });
+      return res.send({ data: item });
     })
     .catch((e) => itemError(req, res, e));
 };

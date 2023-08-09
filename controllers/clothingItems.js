@@ -10,6 +10,12 @@ const getItems = (req, res) => {
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
+  if (!name && !weather && !imageUrl) {
+    return res
+      .status(ERRORS.BAD_REQUEST)
+      .send({ message: "Missing some information" });
+  }
+
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.status(201).send({ data: item });

@@ -24,15 +24,33 @@ const createUser = (req, res) => {
         .hash(password, 10)
         .then((hash) => User.create({ name, avatar, email, password: hash }))
         .then((user) => {
-          res.send({
-            data: { name: user.name, avatar: user.avatar, email: user.email },
-          });
+          res.send({ name, avatar, email, _id: user._id });
         });
     })
     .catch((e) => {
-      itemError(req, res, e);
+      // itemError(req, res, e);
+      console.log(e);
     });
 };
+
+// const createUser = (req, res, next) => {
+//   // console.log(req.body);
+//   const { name, avatar, email, password } = req.body;
+//   bcrypt
+//     .hash(password, 10)
+//     .then((hash) => User.create({ name, avatar, email, password: hash }))
+//     .then((user) => res.send({ name, avatar, email, _id: user._id }))
+//     .catch((e) => {
+//       if (e.name === "ValidationError" || e.name === "CastError") {
+//         next(new ERRORS("The data provided is invalid"));
+//       } else if (err.code === 11000) {
+//         next(new ERRORS("A user with this email already exists"));
+//       } else {
+//         next(e);
+//       }
+//     })
+//     .catch(next);
+// };
 
 // const createUser = (req, res, next) => {
 //   const { name, avatar, email, password } = req.body;
@@ -65,19 +83,20 @@ const login = (req, res) => {
 
 const updateCurrentUser = (req, res) => {
   const { name, avatar } = req.body;
-  const update = { name, avatar };
 
-  User.findByIdAndUpdate({ _id: req.user._id }, update, {
-    new: true,
-    runValidators: true,
-  })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    {
+      new: true,
+      runValidators: true,
+    },
+  )
     .then((user) => {
       if (!user) {
         return res.status(ERRORS.NOT_FOUND).send({ message: "User not found" });
       }
-      return res.send({
-        data: { user, message: "Username updated successfully" },
-      });
+      return res.send({ data: user });
     })
     .catch((e) => {
       itemError(req, res, e);

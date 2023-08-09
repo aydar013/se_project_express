@@ -8,11 +8,9 @@ const userSchema = mongoose.Schema({
     minlength: 2,
     maxlength: 30,
     default: "Elise Bouer",
-    required: true,
   },
   avatar: {
     type: String,
-    required: true,
     default:
       "https://practicum-content.s3.us-west-1.amazonaws.com/software-engineer/wtwr-project/Elise.png",
     validate: {

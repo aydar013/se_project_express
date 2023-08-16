@@ -3,21 +3,22 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { ERRORS, itemError } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
+const ConflictError = require("../errors/conflict-error");
+const BadRequestError = require("../errors/bad-request-error");
+const UnauthorizedError = require("../errors/unauthorized-error");
+const NotFoundError = require("../errors/not-found-error");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   if (!email) {
-    res.status(ERRORS.BAD_REQUEST).send({ message: "Must provide email" });
-    return;
+    return next(new BadRequestError("Must provide email"));
   }
 
   User.findOne({ email })
     .then((existingUser) => {
       if (existingUser) {
-        return res
-          .status(ERRORS.ALREADY_EXIST)
-          .send({ message: "Email already exists" });
+        return next(new ConflictError("Email already exists"));
       }
 
       return bcrypt
@@ -28,60 +29,48 @@ const createUser = (req, res) => {
         });
     })
     .catch((e) => {
-      // itemError(req, res, e);
-      console.log(e);
+      if (e.name === "ValidationError") {
+        next(new BadRequestError("Validation error"));
+      } else {
+        next(e);
+      }
     });
 };
 
-// const createUser = (req, res, next) => {
-//   // console.log(req.body);
-//   const { name, avatar, email, password } = req.body;
-//   bcrypt
-//     .hash(password, 10)
-//     .then((hash) => User.create({ name, avatar, email, password: hash }))
-//     .then((user) => res.send({ name, avatar, email, _id: user._id }))
-//     .catch((e) => {
-//       if (e.name === "ValidationError" || e.name === "CastError") {
-//         next(new ERRORS("The data provided is invalid"));
-//       } else if (err.code === 11000) {
-//         next(new ERRORS("A user with this email already exists"));
-//       } else {
-//         next(e);
-//       }
-//     })
-//     .catch(next);
-// };
-
-// const createUser = (req, res, next) => {
-//   const { name, avatar, email, password } = req.body;
-
-//   bcrypt
-//     .hash(password, 10)
-//     .then((hash) => User.create({ name, avatar, email, password: hash }))
-//     .then((user) => res.send({ name, avatar, email, _id: user._id }))
-//     .catch((e) => {
-//       itemError(req, res, e);
-//     });
-// };
-
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return next(new UnauthorizedError("Incorrect email or password"));
+  }
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-        expiresIn: "7d",
+      res.send({
+        token: jwt.sign({ _id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        }),
       });
-      res.send({ token });
     })
-    .catch(() =>
-      res
-        .status(ERRORS.UNAUTHORIZED)
-        .send({ message: "User is not authorized" }),
-    );
+    .catch(() => {
+      next(new UnauthorizedError("Incorrect email or password"));
+    });
+  // User.findUserByCredentials(email, password)
+  //   .then((user) => {
+  //     if (!user || !password) {
+  //       return next(
+  //         new UnauthorizedError("yaaaay, Incorrect email or password"),
+  //       );
+  //     }
+
+  //     const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+  //       expiresIn: "7d",
+  //     });
+  //     return res.send({ token });
+  //   })
+  //   .catch(next);
 };
 
-const updateCurrentUser = (req, res) => {
+const updateCurrentUser = (req, res, next) => {
   const { name, avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -94,21 +83,32 @@ const updateCurrentUser = (req, res) => {
   )
     .then((user) => {
       if (!user) {
-        return res.status(ERRORS.NOT_FOUND).send({ message: "User not found" });
+        next(new NotFoundError("User not found"));
+      } else {
+        res.send({ data: user });
       }
-      return res.send({ data: user });
     })
     .catch((e) => {
-      itemError(req, res, e);
+      if (e.name === "ValidationError") {
+        next(new BadRequestError("Validation error"));
+      } else {
+        next(e);
+      }
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
     .orFail()
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (!user) {
+        next(new NotFoundError("User not found"));
+      } else {
+        res.send({ data: user });
+      }
+    })
     .catch((e) => {
-      itemError(req, res, e);
+      next(e);
     });
 };
 

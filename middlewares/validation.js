@@ -55,7 +55,10 @@ module.exports.validateAuth = celebrate({
   }),
 });
 module.exports.validateId = celebrate({
-  body: Joi.object().keys({
-    itemId: Joi.string().hex().length(24).required(),
+  params: Joi.object().keys({
+    itemId: Joi.string().hex().length(24).messages({
+      "string.hex": "'_id' does not use hexadecimal values",
+      "string.length": "'_id' length is not equal to 24",
+    }),
   }),
 });

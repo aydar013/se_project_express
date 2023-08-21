@@ -1,16 +1,13 @@
 const ClothingItem = require("../models/clothingItem");
-const { ERRORS, itemError } = require("../utils/errors");
-const ConflictError = require("../errors/conflict-error");
-const BadRequestError = require("../errors/bad-request-error");
-const UnauthorizedError = require("../errors/unauthorized-error");
-const NotFoundError = require("../errors/not-found-error");
-const ForbiddenError = require("../errors/forbidden-error");
+const { BadRequestError } = require("../errors/bad-request-error");
+const { NotFoundError } = require("../errors/not-found-error");
+const { ForbiddenError } = require("../errors/forbidden-error");
 
 const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => res.send({ data: items }))
-    .catch((e) => {
-      next(e);
+    .catch((err) => {
+      next(err);
     });
 };
 
@@ -19,6 +16,7 @@ const createItem = (req, res, next) => {
 
   if (!name && !weather && !imageUrl) {
     next(new BadRequestError("Missing some information"));
+    return;
   }
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
@@ -59,10 +57,10 @@ const deleteItem = (req, res, next) => {
 };
 
 const updateItem = (req, res, next) => {
-  const { itemsId } = req.params;
+  const { itemId } = req.params;
   const { imageUrl } = req.body;
 
-  ClothingItem.findByIdAndUpdate(itemsId, { $set: { imageUrl } })
+  ClothingItem.findByIdAndUpdate(itemId, { $set: { imageUrl } })
     .then((item) => {
       if (!item) {
         next(new NotFoundError("Item not found"));
@@ -77,7 +75,7 @@ const updateItem = (req, res, next) => {
 
 const likeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
-    req.params.itemsId,
+    req.params.itemId,
     { $addToSet: { likes: req.user._id } },
     { new: true },
   )
@@ -99,7 +97,7 @@ const likeItem = (req, res, next) => {
 
 const dislikeItem = (req, res, next) => {
   ClothingItem.findByIdAndUpdate(
-    req.params.itemsId,
+    req.params.itemId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )

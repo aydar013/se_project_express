@@ -1,7 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const { ERRORS, itemError } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 const ConflictError = require("../errors/conflict-error");
 const BadRequestError = require("../errors/bad-request-error");
@@ -54,20 +53,6 @@ const login = (req, res, next) => {
     .catch(() => {
       next(new UnauthorizedError("Incorrect email or password"));
     });
-  // User.findUserByCredentials(email, password)
-  //   .then((user) => {
-  //     if (!user || !password) {
-  //       return next(
-  //         new UnauthorizedError("yaaaay, Incorrect email or password"),
-  //       );
-  //     }
-
-  //     const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-  //       expiresIn: "7d",
-  //     });
-  //     return res.send({ token });
-  //   })
-  //   .catch(next);
 };
 
 const updateCurrentUser = (req, res, next) => {

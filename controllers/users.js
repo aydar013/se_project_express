@@ -10,23 +10,19 @@ const NotFoundError = require("../errors/not-found-error");
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
-  if (!email) {
-    return next(new BadRequestError("Must provide email"));
-  }
-
-  User.findOne({ email })
-    .then((existingUser) => {
-      if (existingUser) {
-        return next(new ConflictError("Email already exists"));
-      }
-
-      return bcrypt
-        .hash(password, 10)
-        .then((hash) => User.create({ name, avatar, email, password: hash }))
-        .then((user) => {
-          res.send({ name, avatar, email, _id: user._id });
-        });
+  User.findOne({ email }).then((existingUser) => {
+    if (existingUser) {
+      return next(new ConflictError("Email already exists"));
+    }
+    return null;
+  });
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
+    .then((user) => {
+      res.send({ name, avatar, email, _id: user._id });
     })
+
     .catch((e) => {
       if (e.name === "ValidationError") {
         next(new BadRequestError("Validation error"));
@@ -39,9 +35,6 @@ const createUser = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return next(new UnauthorizedError("Incorrect email or password"));
-  }
   return User.findUserByCredentials(email, password)
     .then((user) => {
       res.send({
@@ -84,7 +77,6 @@ const updateCurrentUser = (req, res, next) => {
 
 const getCurrentUser = (req, res, next) => {
   User.findById(req.user._id)
-    .orFail()
     .then((user) => {
       if (!user) {
         next(new NotFoundError("User not found"));

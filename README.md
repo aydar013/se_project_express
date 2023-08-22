@@ -16,3 +16,11 @@ We used for this project:
 -Mongoose
 -Postman
 -ESLint
+
+### Links
+
+- Figma Design: [https://www.figma.com/file/F03bTb81Pw8IDPj5Y9rc5i/Sprint-10-%7C-WTWR?type=design&node-id=311-433&t=7MJ476faMvLgaxPk-0]
+- Front end: [https://github.com/aydar013/se_project_react.git]
+- Back end: [https://github.com/aydar013/se_project_express.git]
+
+Link to a final website: [https://www.wtwr.servernux.com/]

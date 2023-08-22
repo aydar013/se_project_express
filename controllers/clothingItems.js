@@ -1,7 +1,7 @@
 const ClothingItem = require("../models/clothingItem");
-const { BadRequestError } = require("../errors/bad-request-error");
-const { NotFoundError } = require("../errors/not-found-error");
-const { ForbiddenError } = require("../errors/forbidden-error");
+const BadRequestError = require("../errors/bad-request-error");
+const NotFoundError = require("../errors/not-found-error");
+const ForbiddenError = require("../errors/forbidden-error");
 
 const getItems = (req, res, next) => {
   ClothingItem.find({})
@@ -13,11 +13,6 @@ const getItems = (req, res, next) => {
 
 const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
-
-  if (!name && !weather && !imageUrl) {
-    next(new BadRequestError("Missing some information"));
-    return;
-  }
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
+const cors = require("./middlewares/cors");
 const helmet = require("helmet");
 const { errors } = require("celebrate");
 const routes = require("./routes");
@@ -13,9 +13,9 @@ const app = express();
 
 mongoose.connect("mongodb://127.0.0.1:27017/wtwr_db");
 
+app.use(cors);
 app.use(requestLogger);
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 
 app.get("/crash-test", () => {

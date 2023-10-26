@@ -1,8 +1,8 @@
 const DEFAULT_ALLOWED_METHODS = "GET,HEAD,PUT,PATCH,POST,DELETE";
 const allowedCors = [
-  "https://api.wtwr.servernux.com",
-  "https://wtwr.servernux.com",
-  "https://www.wtwr.servernux.com",
+  "https://api.wtwr.ldtp.com",
+  "https://wtwr.ldtp.com",
+  "https://www.wtwr.ldtp.com",
   "http://localhost:3000",
   "http://localhost:3001",
 ];

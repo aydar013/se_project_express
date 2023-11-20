@@ -1,6 +1,9 @@
 # WTWR (What to Wear?): Back End
 
 The back-end project is focused on creating a server for the WTWR application.
+This is a node.js clothes application powered by Express that suggests clothing items created by the user!
+
+![Screenshot 2023-10-26 121959](https://github.com/aydar013/se_project_express/assets/121465617/1de5790e-d493-43fa-8875-b6c0575b2287)
 
 ## Functionality
 
